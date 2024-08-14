@@ -17,27 +17,28 @@ import { createHttpObservable } from "../common/util";
   styleUrls: ["./home.component.css"],
 })
 export class HomeComponent implements OnInit {
-  beginnersCourses: Course[] = [];
-  advancedCourses: Course[] = [];
+  beginnersCourses$: Observable<Course[]>;
+  advancedCourses$: Observable<Course[]>;
 
   constructor() {}
 
   ngOnInit() {
     const http$ = createHttpObservable("/api/courses");
 
-    const courses$ = http$.pipe(map((res) => res["payload"]));
+    const courses$: Observable<Course[]> = http$.pipe(
+      map((res) => res["payload"])
+    );
 
-    courses$.subscribe({
-      next: (courses: Course[]) => {
-        this.beginnersCourses = courses.filter(
-          (course) => course.category === "BEGINNER"
-        );
-        this.advancedCourses = courses.filter(
-          (course) => course.category === "ADVANCED"
-        );
-      },
-      error: () => console.log("error"),
-      complete: () => console.log("complete"),
-    });
+    this.beginnersCourses$ = courses$.pipe(
+      map((courses) =>
+        courses.filter((course) => course.category === "BEGINNER")
+      )
+    );
+
+    this.advancedCourses$ = courses$.pipe(
+      map((courses) =>
+        courses.filter((course) => course.category === "ADVANCED")
+      )
+    );
   }
 }
